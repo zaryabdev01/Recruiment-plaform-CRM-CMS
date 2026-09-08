@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Bell, Clock } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { useCrmStore } from "@/lib/crm/store";
+import { getCmsCounts } from "@/lib/cms/mock";
 import { fmtDateTime, fmtRelative, isOverdue } from "@/lib/crm/format";
 import { WORKSPACES, type Workspace } from "@/lib/workspaces";
 import { GridPattern, BlobArt, SpotArt } from "@/components/ui/Decor";
@@ -9,8 +10,9 @@ import { Avatar } from "@/components/ui/Avatar";
 import { cn } from "@/lib/utils";
 
 export function ConsoleHomePage() {
-  const { user, demo } = useAuth();
+  const { user } = useAuth();
   const store = useCrmStore();
+  const cms = getCmsCounts();
 
   const crmAlerts = store.alerts.filter((a) => a.scope === "crm" && !a.done);
   const recAlerts = store.alerts.filter((a) => a.scope === "recruiter" && !a.done);
@@ -64,10 +66,10 @@ export function ConsoleHomePage() {
       ws: WORKSPACES.cms,
       art: "docs",
       stats: [
-        { label: "Pages", value: demo ? "—" : "live" },
-        { label: "Sectors", value: demo ? "—" : "live" },
-        { label: "Banners", value: demo ? "—" : "live" },
-        { label: "Media", value: demo ? "—" : "live" },
+        { label: "Pages", value: cms.pages },
+        { label: "Sectors", value: cms.sectors },
+        { label: "Banners", value: cms.banners },
+        { label: "Media", value: cms.images },
       ],
       links: [
         { label: "Pages", to: "/pages" },
@@ -92,18 +94,15 @@ export function ConsoleHomePage() {
             One login for all three internal tools. Pick a workspace below — each has its own colour so you always know
             where you are.
           </p>
-          {demo && (
-            <span className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-amber-400/20 px-2.5 py-1 text-xs text-amber-200">
-              Demo mode · CRM &amp; Recruiter portal run on sample data
-            </span>
-          )}
+          <span className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-2.5 py-1 text-xs text-white/80">
+            Prototype · sample data, resets on refresh · no backend
+          </span>
         </div>
       </div>
 
       {/* Workspace cards */}
       <div className="grid gap-5 lg:grid-cols-3">
         {cards.map(({ ws, art, stats, links }) => {
-          const locked = ws.needsBackend && demo;
           return (
             <div
               key={ws.key}
@@ -154,7 +153,7 @@ export function ConsoleHomePage() {
                     ws.solidHover
                   )}
                 >
-                  {locked ? "Open (needs sign-in)" : `Open ${ws.short}`}
+                  Open {ws.short}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>

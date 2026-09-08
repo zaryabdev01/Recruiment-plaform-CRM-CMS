@@ -60,7 +60,7 @@ function ActiveBar({ color }: { color: string }) {
 }
 
 export function AppLayout() {
-  const { user, logout, demo } = useAuth();
+  const { user, logout } = useAuth();
   const { pathname } = useLocation();
   const active = workspaceForPath(pathname);
   const name = user ? `${user.first_name} ${user.last_name}` : "User";
@@ -81,7 +81,7 @@ export function AppLayout() {
             <div className="truncate text-sm font-bold text-white">Recruitment Platform</div>
             <div className="text-[11px] text-slate-500">
               Internal Console
-              {demo && <span className="ml-1 rounded bg-amber-400/20 px-1 text-amber-300">demo</span>}
+              <span className="ml-1 rounded bg-white/10 px-1 text-slate-300">prototype</span>
             </div>
           </div>
         </div>
@@ -102,13 +102,11 @@ export function AppLayout() {
           </NavLink>
 
           {NAV.map(({ ws, items }) => {
-            const locked = ws.needsBackend && demo;
             return (
               <div key={ws.key}>
                 <div className="flex items-center gap-1.5 px-3 pb-1.5">
                   <span className={cn("h-2 w-2 rounded-full ring-2 ring-white/10", ws.dot)} />
                   <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">{ws.label}</span>
-                  {locked && <span className="text-[10px] font-normal normal-case text-slate-600">· needs login</span>}
                 </div>
                 <div className="space-y-0.5">
                   {items.map(({ to, label, icon: Icon, end }) => (
@@ -117,7 +115,7 @@ export function AppLayout() {
                       to={to}
                       end={end}
                       className={({ isActive }) =>
-                        cn(navItemBase, locked && "opacity-40", isActive ? "bg-white/10" : "hover:bg-white/5")
+                        cn(navItemBase, isActive ? "bg-white/10" : "hover:bg-white/5")
                       }
                     >
                       {({ isActive }) => (
@@ -147,7 +145,7 @@ export function AppLayout() {
             onClick={logout}
             className="mt-1 flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-400 transition-colors hover:bg-white/5 hover:text-white"
           >
-            <LogOut className="h-4 w-4" /> {demo ? "Exit demo" : "Log out"}
+            <LogOut className="h-4 w-4" /> Log out
           </button>
         </div>
       </aside>

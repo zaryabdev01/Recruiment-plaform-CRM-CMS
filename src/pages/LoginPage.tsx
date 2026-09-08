@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Headset, Handshake, PanelsTopLeft } from "lucide-react";
-import { authApi, isChallenge } from "@/lib/auth-api";
-import { setToken, getApiErrorMessage } from "@/lib/api";
-import { useAuth } from "@/lib/AuthContext";
+import { useAuth, PROTOTYPE_CREDENTIALS } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { GridPattern, BlobArt } from "@/components/ui/Decor";
@@ -17,50 +15,20 @@ const PANELS = [
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const { setUser, enterDemoMode } = useAuth();
+  const { login } = useAuth();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [code, setCode] = useState("");
-  const [challengeToken, setChallengeToken] = useState<string | null>(null);
+  const [email, setEmail] = useState(PROTOTYPE_CREDENTIALS.email);
+  const [password, setPassword] = useState(PROTOTYPE_CREDENTIALS.password);
   const [loading, setLoading] = useState(false);
-
-  const afterLogin = async (accessToken: string) => {
-    setToken(accessToken);
-    const me = await authApi.me();
-    if (me.data.system_role !== "SUPERADMIN") {
-      toast.error("This tool is SUPERADMIN-only. Logged in as a lower role.");
-    }
-    setUser(me.data);
-    navigate("/");
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await authApi.login(email, password);
-      if (isChallenge(res.data)) {
-        setChallengeToken(res.data.challenge_token);
-      } else {
-        await afterLogin(res.data.access_token);
-      }
+      await login(email, password);
+      navigate("/");
     } catch (err) {
-      toast.error(getApiErrorMessage(err));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerify2fa = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!challengeToken) return;
-    setLoading(true);
-    try {
-      const res = await authApi.verify2fa(challengeToken, code);
-      await afterLogin(res.data.access_token);
-    } catch (err) {
-      toast.error(getApiErrorMessage(err));
+      toast.error(err instanceof Error ? err.message : "Could not sign in");
     } finally {
       setLoading(false);
     }
@@ -103,66 +71,38 @@ export function LoginPage() {
           </div>
 
           <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            {!challengeToken ? (
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <h2 className="text-lg font-bold text-gray-900">Sign in</h2>
-                  <p className="text-sm text-gray-500">Use your SUPERADMIN account for the CMS.</p>
-                </div>
-                <Input
-                  label="Email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@recruitment.local"
-                  autoFocus
-                  required
-                />
-                <Input
-                  label="Password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <Button type="submit" className="w-full" loading={loading}>
-                  Sign in
-                </Button>
-                <div className="relative py-1 text-center">
-                  <span className="relative z-10 bg-white px-2 text-xs text-gray-400">or</span>
-                  <span className="absolute inset-x-0 top-1/2 h-px bg-gray-200" />
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
-                    enterDemoMode();
-                    navigate("/");
-                  }}
-                >
-                  Explore in demo mode
-                </Button>
-                <p className="text-center text-xs text-gray-400">
-                  No backend needed — the CRM &amp; Recruiter-portal screens run on sample data.
-                </p>
-              </form>
-            ) : (
-              <form onSubmit={handleVerify2fa} className="space-y-4">
-                <p className="text-sm text-gray-600">Enter the 6-digit code from your authenticator app.</p>
-                <Input
-                  label="2FA code"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  maxLength={6}
-                  autoFocus
-                  required
-                />
-                <Button type="submit" className="w-full" loading={loading}>
-                  Verify
-                </Button>
-              </form>
-            )}
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Sign in</h2>
+                <p className="text-sm text-gray-500">One account for the whole console.</p>
+              </div>
+              <Input
+                label="Email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoFocus
+                required
+              />
+              <Input
+                label="Password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <Button type="submit" className="w-full" loading={loading}>
+                Sign in
+              </Button>
+            </form>
+
+            <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-500">
+              <span className="font-medium text-gray-700">Prototype access</span> — pre-filled above.
+              <div className="mt-1 font-mono text-gray-600">
+                {PROTOTYPE_CREDENTIALS.email} · {PROTOTYPE_CREDENTIALS.password}
+              </div>
+              <p className="mt-1">Sample data, resets on refresh. No real backend.</p>
+            </div>
           </div>
         </div>
       </div>

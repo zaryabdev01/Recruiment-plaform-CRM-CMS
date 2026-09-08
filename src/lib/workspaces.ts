@@ -27,7 +27,6 @@ export interface Workspace {
   navActive: string;
   /** Active nav text colour on the dark sidebar. */
   navDark: string;
-  needsBackend?: boolean;
 }
 
 export const WORKSPACES: Record<Exclude<WorkspaceKey, "home">, Workspace> = {
@@ -84,7 +83,6 @@ export const WORKSPACES: Record<Exclude<WorkspaceKey, "home">, Workspace> = {
     gradient: "from-violet-600 to-purple-700",
     navActive: "bg-violet-50 text-violet-700",
     navDark: "text-violet-200",
-    needsBackend: true,
   },
 };
 

@@ -2,33 +2,32 @@
 
 One login, three workspaces, each with its own accent colour so the current context is always obvious:
 
-| Workspace | Colour | What it is | Backend |
-|---|---|---|---|
-| **CRM** | blue | Support desk over the whole platform — every recruiter + candidate, all jobs, CRM's own team | mock |
-| **Recruiter portal** | emerald | An agency's own view — relationships, team, allocated jobs, library | mock |
-| **CMS** | violet | The original SUPERADMIN content tool (Pages, Sectors, Homepage, Banners, Media) | live `recruit-be` |
-
-After login you land on **Console home** (`/`) — a dashboard with a card per workspace (live counts, quick links, "Open"), a merged "next alerts" list across CRM + Recruiter, and a colour key. The left sidebar groups nav by workspace; a slim top bar shows which workspace you're in.
-
-The CRM + Recruiter portal are a **mock, in-memory** prototype of the Sprint 8 "Internal CRM & Recruitment Pipeline" rework plus the client's recruiter-side feedback — **no backend**, so the client can click every flow before we commit to real design, frontend and backend work.
-
-## Two ways in
-
-| | For | Needs backend? |
+| Workspace | Colour | What it is |
 |---|---|---|
-| **Explore in demo mode** (button on the login screen) | Reviewing the CRM + Recruiter-portal prototype | No |
-| SUPERADMIN sign-in (`admin@recruitment.local` / `ChangeMe123!`) | The CMS section | Yes — migrated + seeded `recruit-be` |
+| **CRM** | blue | Support desk over the whole platform — every recruiter + candidate, all jobs, CRM's own team |
+| **Recruiter portal** | emerald | An agency's own view — relationships, team, allocated jobs, library |
+| **CMS** | violet | Content tool — Pages, Sectors, Homepage, Banners, Media library |
 
-Both land on Console home. Demo mode stores a flag in `localStorage`; "Exit demo" on the sidebar clears it. The CMS nav items and home card are dimmed and marked "needs login" while in demo mode.
+**Everything runs on in-memory sample data — no backend.** This is a functionality/UX prototype for client review before the real design, frontend and backend build. Nothing persists (a refresh resets it) and nothing actually sends.
+
+After login you land on **Console home** (`/`) — a card per workspace with counts and quick links, a merged "next alerts" list, and a colour key. The left sidebar groups nav by workspace; a slim top bar shows which workspace you're in.
+
+## Signing in
+
+One account unlocks the whole console (it's pre-filled on the login screen):
+
+```
+admin@recruitmentplatform.com
+demo1234
+```
 
 ## Running it
 
 ```bash
 npm install
 npm run dev            # http://localhost:5174
+npm run build          # static site in dist/ (deployed to Netlify)
 ```
-
-For the CMS section you also need `recruit-be` running (see the main repo README — `alembic upgrade head` then `python -m scripts.seed`). The dev server proxies `/api/*` to it.
 
 ## What the CRM prototype covers
 
@@ -51,12 +50,14 @@ The recruiter-facing side of the same feedback.
   - Alerts are set with **date, time and reason** on organisations, candidates and decision makers.
 - **Library** — every item can be **viewed on screen** or **downloaded**, and carries an editable **review date** (overdue is flagged). **Delete** opens the site-wide guard, which first **lists everywhere the item is still used** and warns the action is irreversible.
 
+### CMS (`/pages`, `/sectors`, `/homepage`, `/banners`, `/media`)
+Full create / edit / delete on Pages (with a rich-text editor + image insert), Sector→page links, the fixed-section Homepage editor, Dashboard Banners, and the Media library. All of it reads and writes an in-memory store (`src/lib/cms/mock.ts`) installed as the axios adapter, so the existing page components are unchanged — they just never reach a network.
+
 ### Global
 `ConfirmDialog` is the one component behind every delete in the prototype — nothing is removed on the first click anywhere.
 
 ## Deliberately not included
 
-- No persistence — a refresh resets the CRM prototype to its seed data.
-- Nothing actually sends (emails/texts are logged to the mock history only).
-- The CRM prototype does not touch `recruit-be`; the existing `/crm/*` API is not wired up here. Field/entity names in the mock are indicative, not final.
-- Everything the CMS prototype already excluded (see git history) still applies to that section.
+- No persistence — a refresh resets everything to seed data.
+- Nothing actually sends (emails/texts are logged to the mock history only); uploaded images live only for the session.
+- No real `recruit-be` integration. Field/entity names in the mock are indicative, not final.

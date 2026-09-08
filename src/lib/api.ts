@@ -8,10 +8,13 @@
  * frontend's refresh-queue pattern if this graduates to production.
  */
 import axios, { type InternalAxiosRequestConfig } from "axios";
+import { cmsMockAdapter } from "@/lib/cms/mock";
 
 export const api = axios.create({
   baseURL: "/api/v1",
   headers: { "Content-Type": "application/json" },
+  // Prototype: the CMS section runs on an in-memory mock, not recruit-be.
+  adapter: cmsMockAdapter,
 });
 
 const TOKEN_KEY = "cms_access_token";
