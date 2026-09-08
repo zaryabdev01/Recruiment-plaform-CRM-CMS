@@ -1,0 +1,29 @@
+# Netlify deploy config for the Internal Console prototype (Vite + React Router).
+#
+# Build: `npm run build` -> static site in `dist/`.
+# Demo mode (CRM + Recruiter portal) is fully static and needs no backend.
+# The CMS section calls the recruit-be API; in local dev vite proxies
+# `/api` -> localhost:3000 (see vite.config.ts). On Netlify there is no proxy,
+# so to make the CMS section work you must forward /api to the deployed
+# backend — uncomment the first redirect below and set the host.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# --- OPTIONAL: forward API calls to the real backend (keep ABOVE the SPA rule) ---
+# [[redirects]]
+#   from = "/api/*"
+#   to = "https://YOUR-BACKEND-HOST/api/:splat"
+#   status = 200
+#   force = true
+
+# SPA fallback — every unknown path serves index.html so client-side routing
+# (e.g. a hard refresh on /crm/relationships) doesn't 404.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
